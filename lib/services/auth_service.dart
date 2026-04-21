@@ -11,6 +11,7 @@ class AuthService {
   FirebaseAuth get _auth => FirebaseAuth.instance;
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   final gsi.GoogleSignIn _googleSignIn = gsi.GoogleSignIn(
+    clientId: '447317744345-hpqtj4knps9sdm8iq08o437vrqv40fs9.apps.googleusercontent.com',
     scopes: ['email'],
   );
 

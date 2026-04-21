@@ -8,17 +8,18 @@ import 'services/presence_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     if (kIsWeb) {
       // Dummy options to prevent white screen on Web if real options aren't configured yet
       await Firebase.initializeApp(
         options: const FirebaseOptions(
-          apiKey: "dummy-api-key",
-          appId: "dummy-app-id",
-          messagingSenderId: "dummy-sender-id",
-          projectId: "dummy-project-id",
-          storageBucket: "dummy-bucket.appspot.com",
+          apiKey: "AIzaSyDjzXYS7ZBQaWGnI9ZbXOEl_R5iVsZWBYE",
+          appId:
+              "1:447317744345:web:b66343a956efce3af2bcc8", // Estimated based on Android ID format
+          messagingSenderId: "447317744345",
+          projectId: "gupshup-2fc5c",
+          storageBucket: "gupshup-2fc5c.firebasestorage.app",
         ),
       );
     } else {
@@ -27,7 +28,7 @@ void main() async {
   } catch (e) {
     debugPrint('Firebase initialization failed: $e');
   }
-  
+
   runApp(
     const ProviderScope(
       child: GupShupApp(),
@@ -42,14 +43,15 @@ class GupShupApp extends ConsumerStatefulWidget {
   ConsumerState<GupShupApp> createState() => _GupShupAppState();
 }
 
-class _GupShupAppState extends ConsumerState<GupShupApp> with WidgetsBindingObserver {
+class _GupShupAppState extends ConsumerState<GupShupApp>
+    with WidgetsBindingObserver {
   PresenceService? _presenceService;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Lazy initialization of service
     if (Firebase.apps.isNotEmpty) {
       _presenceService = PresenceService();
@@ -66,7 +68,7 @@ class _GupShupAppState extends ConsumerState<GupShupApp> with WidgetsBindingObse
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (Firebase.apps.isEmpty || _presenceService == null) return;
-    
+
     if (state == AppLifecycleState.resumed) {
       _presenceService?.updateUserPresence();
     } else {

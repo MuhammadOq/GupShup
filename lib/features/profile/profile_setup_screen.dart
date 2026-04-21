@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'dart:html' as io;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,16 +18,25 @@ class ProfileSetupScreen extends ConsumerStatefulWidget {
 
 class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _nameController = TextEditingController();
-  File? _image;
+  XFile? _imageFile;
+  Uint8List? _webImage;
   bool _isLoading = false;
 
   Future<void> _pickImage() async {
     try {
       final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
-        setState(() {
-          _image = File(pickedFile.path);
-        });
+        if (kIsWeb) {
+          final bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _webImage = bytes;
+            _imageFile = pickedFile;
+          });
+        } else {
+          setState(() {
+            _imageFile = pickedFile;
+          });
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -46,14 +56,16 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     }
     
     setState(() => _isLoading = true);
+    debugPrint('[ProfileSetup] Starting save profile...');
     
     try {
       final user = FirebaseAuth.instance.currentUser;
+      debugPrint('[ProfileSetup] Current User: ${user?.uid}');
       
       if (user == null) {
-        // Bypass firestore for mock users to prevent rule rejection
+        debugPrint('[ProfileSetup] User is null, redirecting to login');
         if (!mounted) return;
-        context.go('/home');
+        context.go('/login');
         return;
       }
 
@@ -63,14 +75,21 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         displayName: name,
         isOnline: true,
         lastSeen: DateTime.now(),
-        photoUrl: '', 
+        photoUrl: user.photoURL ?? '', 
       );
       
-      await ref.read(authServiceProvider).saveUserData(userModel);
+      debugPrint('[ProfileSetup] Saving to Firestore...');
+      // Add a timeout to prevent infinite loading
+      await ref.read(authServiceProvider).saveUserData(userModel).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw 'Connection timeout. Please check your internet and Firestore settings.',
+      );
       
+      debugPrint('[ProfileSetup] Firestore write successful!');
       if (!mounted) return;
       context.go('/home');
     } catch (e) {
+      debugPrint('[ProfileSetup] Error: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,8 +119,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: _image != null ? FileImage(_image!) : null,
-                child: _image == null
+                backgroundImage: kIsWeb 
+                    ? (_webImage != null ? MemoryImage(_webImage!) : null)
+                    : (_imageFile != null ? FileImage(io.File(_imageFile!.path)) : null),
+                child: (_webImage == null && _imageFile == null)
                     ? const Icon(Icons.add_a_photo, size: 40, color: Colors.white)
                     : null,
               ),
