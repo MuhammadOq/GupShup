@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/theme/app_colors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -32,16 +31,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: const Color(0xFF004080),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.chat_bubble, size: 100, color: Colors.white),
+            Image.asset(
+              'assets/images/app_icon.png',
+              height: 120,
+              width: 120,
+            ),
             const SizedBox(height: 20),
-            Text(
+            const Text(
               'GupShup',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              style: TextStyle(
+                fontSize: 36,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),

@@ -17,7 +17,8 @@ class PresenceService {
     userDoc.update({
       'isOnline': true,
       'lastSeen': FieldValue.serverTimestamp(),
-    }).catchError((e) => print('Error updating presence: $e'));
+    }).catchError((e) => null);
+
   }
 
   void setUserOffline() {
@@ -28,7 +29,8 @@ class PresenceService {
     _firestore.collection(AppConstants.usersCollection).doc(uid).update({
       'isOnline': false,
       'lastSeen': FieldValue.serverTimestamp(),
-    }).catchError((e) => print('Error setting offline: $e'));
+    }).catchError((e) => null);
+
   }
 
   Stream<DocumentSnapshot>? getUserPresence(String uid) {

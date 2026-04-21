@@ -1,7 +1,8 @@
 import 'package:go_router/go_router.dart';
 import '../../features/auth/splash_screen.dart';
 import '../../features/auth/onboarding_screen.dart';
-import '../../features/auth/phone_auth_screen.dart';
+import '../../features/auth/login_screen.dart';
+
 import '../../features/profile/profile_setup_screen.dart';
 import '../../features/chat/home_screen.dart';
 import '../../features/chat/individual_chat_screen.dart';
@@ -17,7 +18,8 @@ final goRouter = GoRouter(
   routes: [
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
-    GoRoute(path: '/auth', builder: (context, state) => const PhoneAuthScreen()),
+    GoRoute(path: '/auth', builder: (context, state) => const LoginScreen()),
+
     GoRoute(path: '/profile-setup', builder: (context, state) => const ProfileSetupScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(
