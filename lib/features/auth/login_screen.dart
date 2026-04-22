@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -22,7 +21,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final userCredential = await authService.signInWithGoogle();
       if (userCredential != null) {
         if (!mounted) return;
-        context.go('/profile-setup');
+        // Check if user already has profile data
+        final userData =
+            await authService.getUserData(userCredential.user!.uid);
+        if (userData != null &&
+            userData.displayName != null &&
+            userData.displayName!.isNotEmpty) {
+          context.go('/home');
+        } else {
+          context.go('/profile-setup');
+        }
       } else {
         setState(() => _isLoading = false);
       }
@@ -40,77 +48,172 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.primary,
-              AppColors.primary.withValues(alpha: 0.8),
-            ],
-          ),
+        decoration: const BoxDecoration(
+          color: AppColors.background,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // App Logo
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Image.asset(
-                'assets/images/app_icon.png',
-                height: 100,
-                width: 100,
-              ),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'GupShup',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Text(
-              'Chat & Messaging',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 60),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton.icon(
-                        onPressed: _signInWithGoogle,
-                        icon: const FaIcon(FontAwesomeIcons.google, color: Colors.red),
-                        label: const Text(
-                          'Continue with Google',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Spacer(flex: 2),
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.chat,
+                    size: 48,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'GupShup',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Chat freely, connect instantly',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+                const Spacer(flex: 2),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          color: AppColors.primaryContainer)
+                      : SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _signInWithGoogle,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 2,
+                              shadowColor: Colors.black26,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    image: const DecorationImage(
+                                      image: NetworkImage(
+                                        'https://www.gstatic.com/images/branding/product/2x/gsa_2020q4_48dp.png',
+                                      ),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Continue with Google',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
+                ),
+                const SizedBox(height: 64),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLow.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.secondaryContainer
+                              .withValues(alpha: 0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.lock_outline,
+                          color: AppColors.primary,
+                          size: 20,
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Private & Secure',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'End-to-end encryption ensures your conversations stay only between you and your friends.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.onSurfaceVariant,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(flex: 1),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 32),
+                  child: Text(
+                    'By continuing, you agree to our Terms of Service and Privacy Policy.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.outline,
                     ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
